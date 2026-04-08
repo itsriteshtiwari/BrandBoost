@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+:root {
+            --primary-color: #405DE6;
+            --secondary-color: #5851DB;
+            --accent-color: #E1306C;
+            --text-color: #262626;
+            --text-light: #8e8e8e;
+            --bg-color: #ffffff;
+            --border-color: #DBDBDB;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: #1a144e; /* Deep blue from the design */
+  font-family: "Inter", sans-serif;
+        }
+        /* Custom scrollbar for a better aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0b2b;
+}
+::-webkit-scrollbar-thumb {
+  background: #4a4a6b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6a6a8b;
+}
