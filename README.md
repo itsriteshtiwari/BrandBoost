@@ -39,7 +39,7 @@ BrandBoost is a comprehensive sponsorship networking platform designed to seamle
 ### Backend Setup (FastAPI)
 1. Clone the repository and navigate to the backend directory:
    ```bash
-   git clone [https://github.com/yourusername/brandboost.git](https://github.com/yourusername/brandboost.git)
+   git clone [https://github.com/itsriteshtiwari/BrandBoost.git](https://github.com//brandboost.git)
    cd brandboost/backend
    ```
 2. Create and activate a virtual environment:
