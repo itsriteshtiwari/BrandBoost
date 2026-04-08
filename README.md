@@ -56,3 +56,17 @@ BrandBoost is a comprehensive sponsorship networking platform designed to seamle
    ```
    python -m uvicorn main:app --reload
    ```
+BrandBoost/
+├── backend/
+│   ├── uploads/            # Media storage (Profile photos, Chat files)
+│   ├── main.py             # FastAPI entry point, Routes, and DB Models
+│   └── requirements.txt    # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Reusable UI components (ContentCard, Icons)
+│   │   ├── pages/          # React Views (HomePage, MessagePage, Profile)
+│   │   ├── App.jsx         # Main React router
+│   │   └── main.jsx        # React DOM entry
+│   ├── package.json        # Node dependencies
+│   └── tailwind.config.js  # Tailwind styling rules
+└── README.md
