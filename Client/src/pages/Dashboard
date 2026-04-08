@@ -1,0 +1,67 @@
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
+import HomePage from "./HomePage";
+import SearchPage from "./SearchPage";
+import PostPage from "./PostPage";
+import NotificationsPage from "./NotificationsPage";
+import MessagePage from "./MessagePage";
+import AdminProfilePage from "./AdminProfilePage";
+import UserProfilePage from "./UserProfilePage";
+import EditProfilePage from "./EditProfilePage";
+import PostContents from "./PostContents";
+
+function Dashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!localStorage.getItem("user")) {
+      navigate("/");
+    }
+  }, []);
+
+  // ✅ FIX: define current user
+  const current = JSON.parse(localStorage.getItem("user") || "null");
+
+  // ✅ protect dashboard
+  if (!current) {
+    navigate("/");
+    return null;
+  }
+
+  const currentPage = location.pathname.split("/").pop();
+  const showSidebar = !location.pathname.endsWith("/home");
+
+  let mainContentClass = "flex-grow transition-all duration-300";
+  if (showSidebar) mainContentClass += " ml-20 md:ml-64";
+
+  return (
+    <div className="flex min-h-screen bg-[#1a144e]">
+      <div className="fixed top-0 left-0 h-full z-20">
+        {showSidebar && <Sidebar currentPage={currentPage} />}
+      </div>
+
+      <div className={mainContentClass}>
+        <Routes>
+          <Route path="home" element={<HomePage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="post" element={<PostPage />} />
+          <Route path="post/:postId" element={<PostContents />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="messages" element={<MessagePage />} />
+
+          {/* ✅ Admin profile (logged-in user) */}
+          <Route path="profile" element={<AdminProfilePage />} />
+
+          {/* ✅ Any user profile (including self) */}
+          <Route path="user/:userId" element={<UserProfilePage />} />
+
+          <Route path="edit-profile" element={<EditProfilePage />} />
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
+export default Dashboard;
