@@ -56,6 +56,7 @@ BrandBoost is a comprehensive sponsorship networking platform designed to seamle
    ```
    python -m uvicorn main:app --reload
    ```
+```
 BrandBoost/
 ├── backend/
 │   ├── uploads/            # Media storage (Profile photos, Chat files)
@@ -70,3 +71,4 @@ BrandBoost/
 │   ├── package.json        # Node dependencies
 │   └── tailwind.config.js  # Tailwind styling rules
 └── README.md
+```
