@@ -1,0 +1,199 @@
+/* ======= GENERAL ======= */
+.homepage-container {
+  width: 100%;
+  background-color: #0d0b2b;
+  color: white;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* ======= HEADER ======= */
+.homepage-header {
+  background-color: #1a144e;
+  color: white;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #4b4b4b;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* ======= SEARCH BAR ======= */
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 16px;
+}
+
+.search-input {
+  width: 100%;
+  background-color: #0d0b2b;
+  border: 1px solid #555;
+  border-radius: 30px;
+  padding: 10px 40px 10px 16px;
+  color: white;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-input:focus {
+  border: 1px solid #007bff;
+}
+
+.search-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #ccc;
+}
+
+/* ======= ICONS ======= */
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.icon:hover {
+  color: #3498db;
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+  background-color: #555;
+}
+
+/* ======= MAIN SECTION ======= */
+.homepage-main {
+  padding: 32px;
+  text-align: center;
+}
+
+.intro-text {
+  margin-bottom: 48px;
+}
+
+.intro-text h1 {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.intro-text p {
+  font-size: 18px;
+  color: #ccc;
+}
+
+/* ======= CARD GRID ======= */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 32px;
+}
+
+/* ======= EXISTING CSS (Keep everything above, add this below) ======= */
+
+/* Wrapper for icons that need badges (like the Bell) */
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ✅ Red Notification Dot */
+.notification-dot {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 10px;
+  height: 10px;
+  background-color: #ff3b30; /* iOS Red */
+  border-radius: 50%;
+  border: 2px solid #1a144e; /* Matches header background to look cut-out */
+}
+
+/* ✅ Header Profile Picture Container */
+.header-profile-pic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #333; /* Fallback color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #555;
+  transition: border-color 0.3s;
+}
+
+.message-badge {
+  position: absolute;
+  top: -5px;   /* Move it up slightly */
+  right: -5px; /* Move it right slightly */
+  
+  background-color: #ff3b30; /* Red */
+  color: white;
+  
+  font-size: 10px;
+  font-weight: bold;
+  
+  /* Size and Shape */
+  min-width: 16px; 
+  height: 16px;
+  padding: 0 4px; /* Padding for numbers like "9+" */
+  border-radius: 10px; /* Pill shape */
+  
+  /* Centering the number */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  border: 2px solid #1a144e; /* Cutout effect */
+  z-index: 10;
+}
+
+.header-profile-pic:hover {
+  border-color: #3498db;
+}
+
+/* If user has an image */
+.header-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* If user has NO image (Initial) */
+.header-initial {
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  user-select: none;
+}
