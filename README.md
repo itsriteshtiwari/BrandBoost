@@ -29,6 +29,24 @@ BrandBoost is a comprehensive sponsorship networking platform designed to seamle
 * GitHub
 * VS Code
 
+## Project Structure
+BrandBoost/
+├── Server/
+│   ├── uploads/            # Media storage (Profile photos, Chat files)
+│   ├── main.py             # FastAPI entry point, Routes, and DB Models
+│   └── requirements.txt    # Python dependencies
+├── Client/
+│   ├── src/
+│   │   ├── components/     # Reusable UI components (ContentCard, Icons)
+│   │   ├── pages/          # React Views (HomePage, MessagePage, Profile)
+│   │   ├── App.jsx         # Main React router
+│   │   ├── index.css       # Root css
+│   │   ├── ProtectedRoute.jsx 
+│   │   └── main.jsx        # React DOM entry
+│   ├── package.json        # Node dependencies
+│   └── tailwind.config.js  # Tailwind styling rules
+└── README.md
+
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
