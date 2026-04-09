@@ -60,7 +60,7 @@ BrandBoost/
 1. Clone the repository and navigate to the backend directory:
    ```bash
    git clone https://github.com/itsriteshtiwari/BrandBoost
-   cd brandboost/backend
+   cd brandboost/Server
    ```
 2. Create and activate a virtual environment:
    ```
@@ -76,3 +76,17 @@ BrandBoost/
    ```
    python -m uvicorn main:app --reload
    ```
+### Frontend Setup (React)
+1. Open a new terminal and navigate to the frontend directory:
+   ```
+   cd brandboost/Client
+   ```
+2. Install the required Node modules:
+   ```
+   npm install
+   ```
+3. Start the Vite development server:
+   ```
+   npm run dev
+   ```
+4. Access the application at `http://localhost:5173`.
