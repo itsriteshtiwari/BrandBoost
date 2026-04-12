@@ -17,6 +17,7 @@ function EditProfilePage() {
     username: storedUser.username || "",
     bio: storedUser.bio || "",
     location: storedUser.location || "",
+    role: storedUser.role || "", // ✅ NEW
     coverPhoto: storedUser.coverPhoto || "",
     profilePhoto: storedUser.profilePhoto || "",
     socials: storedUser.socials || {
@@ -28,9 +29,7 @@ function EditProfilePage() {
     }
   });
 
-  // ✅ 1. Add Error State
   const [error, setError] = useState("");
-
   const [removeProfilePhoto, setRemoveProfilePhoto] = useState(false);
   const [removeCoverPhoto, setRemoveCoverPhoto] = useState(false);
 
@@ -53,6 +52,7 @@ function EditProfilePage() {
           username: data.username ?? prev.username,
           bio: data.bio ?? prev.bio,
           location: data.location ?? prev.location,
+          role: data.role ?? prev.role, // ✅ NEW
           coverPhoto: data.coverPhoto ?? prev.coverPhoto,
           profilePhoto: data.profilePhoto ?? prev.profilePhoto,
           socials: data.socials ?? prev.socials
@@ -66,7 +66,6 @@ function EditProfilePage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Optional: Clear error when user types
     if (error) setError("");
   };
 
@@ -78,9 +77,7 @@ function EditProfilePage() {
     }));
   };
 
-  // ✅ 2. Validation Function
   const validateForm = () => {
-    // Validate Full Name: Alphabets + Spaces only, Max 50
     const nameRegex = /^[a-zA-Z\s]+$/;
     if (!nameRegex.test(formData.fullName)) {
       setError("Full Name must contain only alphabets.");
@@ -91,7 +88,6 @@ function EditProfilePage() {
       return false;
     }
 
-    // Validate Username: Lowercase only, Max 20
     const userRegex = /^[a-z]+$/;
     if (!userRegex.test(formData.username)) {
       setError("Username must be lowercase letters only (no numbers, spaces, or caps).");
@@ -106,10 +102,9 @@ function EditProfilePage() {
   };
 
   const handleSaveChanges = async () => {
-    // ✅ 3. Run Validation Logic
-    setError(""); // Clear previous errors
+    setError(""); 
     if (!validateForm()) {
-      return; // Stop if validation fails
+      return; 
     }
 
     try {
@@ -120,6 +115,7 @@ function EditProfilePage() {
       fd.append("username", formData.username);
       fd.append("bio", formData.bio);
       fd.append("location", formData.location);
+      fd.append("role", formData.role); // ✅ NEW
       fd.append("socials", JSON.stringify(formData.socials));
 
       if (removeProfilePhoto) {
@@ -142,7 +138,6 @@ function EditProfilePage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // Show backend error if validation passed frontend but failed backend
         setError(data.detail || "Update failed");
         return;
       }
@@ -209,7 +204,7 @@ function EditProfilePage() {
             className="remove-btn"
             onClick={() => {
               setRemoveCoverPhoto(true);
-              setCoverPhotoFile(null); // Clear any pending file
+              setCoverPhotoFile(null); 
               setFormData(p => ({ ...p, coverPhoto: "" }));
             }}
           >
@@ -257,7 +252,7 @@ function EditProfilePage() {
                className="remove-btn"
                onClick={() => {
                   setRemoveProfilePhoto(true);
-                  setProfilePhotoFile(null); // Clear any pending file
+                  setProfilePhotoFile(null); 
                   setFormData(p => ({ ...p, profilePhoto: "" }));
                 }}
               >
@@ -302,9 +297,23 @@ function EditProfilePage() {
           name="location"
           value={formData.location}
           onChange={handleChange}
-          className="text-input"
+          className="text-input mb-4"
           placeholder="State, Country"
         />
+
+        {/* ✅ NEW: Role Select */}
+        <label className="label">Account Type</label>
+        <select
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          className="text-input mb-4"
+        >
+          <option value="">Select Type</option>
+          <option value="Seeker">Seeker</option>
+          <option value="Brand">Brand</option>
+          <option value="Agency">Agency</option>
+        </select>
 
         {/* SOCIAL LINKS */}
         <h3 className="section-title">Social Links</h3>
@@ -316,7 +325,6 @@ function EditProfilePage() {
           <input name="mail" value={formData.socials.mail} onChange={handleSocialChange} className="text-input" placeholder="Email" />
         </div>
 
-        {/* ✅ 4. Error Message Display */}
         {error && (
           <div style={{ color: "red", marginTop: "10px", textAlign: "center", fontWeight: "bold" }}>
             {error}
