@@ -30,23 +30,19 @@ function UserProfilePage() {
     return `http://localhost:8000${path}`;
   };
 
-  /* ================= REDIRECT OWN PROFILE ================= */
   useEffect(() => {
     if (current && parseInt(userId) === current.id) {
       navigate("/dashboard/profile");
     }
   }, [userId]);
 
-  /* ================= FETCH USER DATA ================= */
   useEffect(() => {
     if (!userId) return;
 
-    // profile info
     fetch(`http://localhost:8000/users/${userId}`)
       .then(res => res.json())
       .then(setUser);
 
-    // followers / following
     fetch(`http://localhost:8000/follow-stats/${userId}`)
       .then(res => res.json())
       .then(data =>
@@ -57,7 +53,6 @@ function UserProfilePage() {
         }))
       );
 
-    // user posts
     fetch(`http://localhost:8000/users/${userId}/posts`)
       .then(res => res.json())
       .then(data => {
@@ -65,7 +60,6 @@ function UserProfilePage() {
         setStats(s => ({ ...s, posts: data.length }));
       });
 
-    // ✅ FIXED: Use the correct is-following endpoint
     if (current) {
       fetch(`http://localhost:8000/is-following/${current.id}/${userId}`)
         .then(res => res.json())
@@ -74,7 +68,6 @@ function UserProfilePage() {
     }
   }, [userId, current?.id]);
 
-  /* ================= FOLLOW / UNFOLLOW ================= */
   const toggleFollow = async () => {
     if (!current) return navigate("/");
 
@@ -101,23 +94,31 @@ function UserProfilePage() {
 
   if (!user) return <div className="p-6 text-white">Loading...</div>;
 
-  /* ================= UI ================= */
   return (
     <main className="main-content">
       <div className="profile-header">
         <div className="profile-cards">
           <div className="cover-container">
             {user.coverPhoto ? (
-              <img src={`http://localhost:8000${user.coverPhoto}`} alt="Cover" className="cover-photo" />
+              <img src={getImageUrl(user.coverPhoto)} alt="Cover" className="cover-photo" />
             ) : (
               <div className="cover-empty">{user.fullName || "Upload Cover"}</div>
             )}
+            
             <div className="profile-avatar">
               {user.profilePhoto ? (
                 <img src={getImageUrl(user.profilePhoto)} alt="avatar" className="profile-pics"/>
               ) : (
                 <UserIcon size={60} />
               )}
+            </div>
+
+            <div className="cover-socials">
+              {user.socials?.facebook && <a href={user.socials.facebook} target="_blank" rel="noreferrer"><FacebookIcon /></a>}
+              {user.socials?.instagram && <a href={user.socials.instagram} target="_blank" rel="noreferrer"><InstagramIcon /></a>}
+              {user.socials?.twitter && <a href={user.socials.twitter} target="_blank" rel="noreferrer"><TwitterIcon /></a>}
+              {user.socials?.youtube && <a href={user.socials.youtube} target="_blank" rel="noreferrer"><YoutubeIcon /></a>}
+              {user.socials?.mail && <a href={`mailto:${user.socials.mail}`}><MailIcon /></a>}
             </div>
           </div>
 
@@ -142,15 +143,22 @@ function UserProfilePage() {
 
             <div className="profile-details">
               <h1 className="profile-name">{user.fullName}</h1>
-              <p className="profile-username">@{user.username}</p>
+              
+              {/* ✅ NEW: Role shown after username */}
+              <p className="profile-username" style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                @{user.username}
+                {user.role && (
+                  <span style={{ background: "transprant", color: "gray", padding: "2px 2px", borderRadius: "12px", fontSize: "12px" }}>
+                    {user.role}
+                  </span>
+                )}
+              </p>
 
               <div className="profile-actions">
-                {/* ✅ Follow Button reflects state correctly */}
                 <button className={`btn-follow ${isFollowing ? "following-state" : ""}`} onClick={toggleFollow}>
                   {isFollowing ? "Unfollow" : "Follow"}
                 </button>
                 
-                {/* ✅ FIXED: Pass user data securely to MessagePage */}
                 <button
                   className="btn-message"
                   onClick={() =>
@@ -171,14 +179,6 @@ function UserProfilePage() {
               </div>
             </div>
 
-            <div className="profile-social">
-              {user.socials?.facebook && <a href={user.socials.facebook}><FacebookIcon /></a>}
-              {user.socials?.instagram && <a href={user.socials.instagram}><InstagramIcon /></a>}
-              {user.socials?.twitter && <a href={user.socials.twitter}><TwitterIcon /></a>}
-              {user.socials?.youtube && <a href={user.socials.youtube}><YoutubeIcon /></a>}
-              {user.socials?.mail && <a href={`mailto:${user.socials.mail}`}><MailIcon /></a>}
-            </div>
-
             <div className="profile-description">
               <p>{user.bio}</p>
             </div>
@@ -192,7 +192,6 @@ function UserProfilePage() {
           </div>
         </div>
 
-        {/* ================= POSTS GRID ================= */}
         <div className="posts-grid">
           {posts.length === 0 ? (
             <p className="text-center text-gray-400 mt-6">No posts yet</p>
