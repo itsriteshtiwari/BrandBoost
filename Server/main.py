@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 # ------------------------------------------------------
 # DATABASE SETUP
 # ------------------------------------------------------
-DATABASE_URL = "mysql+pymysql://root: your mysql password@localhost/brandboost"
+DATABASE_URL = "mysql+pymysql://root:Anchal%4059x@localhost/brandboost"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -41,6 +41,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     bio = Column(Text)
     location = Column(String(255))
+    role = Column(String(50), nullable=True) # ✅ NEW: Seeker, Brand, Agency
     profilePhoto = Column(String(500))
     coverPhoto = Column(String(500))
     socials = Column(JSON)
@@ -52,7 +53,7 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     caption = Column(Text, nullable=True)
-    media = Column(LONGTEXT, nullable=True)  # ✅ FIX
+    media = Column(LONGTEXT, nullable=True)  
     views = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
 
@@ -92,11 +93,11 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True)
-    receiver_id = Column(Integer)      # user who receives notification
-    sender_id = Column(Integer)        # user who triggered it
-    type = Column(String(50))          # like, comment, follow
+    receiver_id = Column(Integer)      
+    sender_id = Column(Integer)        
+    type = Column(String(50))          
     post_id = Column(Integer, nullable=True)
-    read_flag = Column(Integer, default=0)  # 0 = unread, 1 = read
+    read_flag = Column(Integer, default=0)  
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -137,7 +138,6 @@ class UserCreate(BaseModel):
     def validate_fullname(cls, v):
         if len(v) > 50:
             raise ValueError('Name must be 50 characters or less')
-        # Allow alphabets and spaces only
         if not re.match(r"^[a-zA-Z\s]+$", v):
             raise ValueError('Name must contain only alphabets')
         return v
@@ -146,7 +146,6 @@ class UserCreate(BaseModel):
     def validate_username(cls, v):
         if len(v) > 20:
             raise ValueError('Username must be 20 characters or less')
-        # Lowercase letters only (no numbers, no spaces)
         if not re.match(r"^[a-z]+$", v):
             raise ValueError('Username must be lowercase letters only')
         return v
@@ -155,8 +154,6 @@ class UserCreate(BaseModel):
     def validate_password(cls, v):
         if len(v) < 8 or len(v) > 20:
             raise ValueError('Password must be between 8 and 20 characters')
-        
-        # Check complexity: 1 Upper, 1 Lower, 1 Number or Special char
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).+$"
         if not re.match(regex, v):
             raise ValueError('Password must contain 1 uppercase, 1 lowercase, and 1 number/special character')
@@ -180,6 +177,7 @@ class UserUpdate(BaseModel):
     username: Optional[str]
     bio: Optional[str]
     location: Optional[str]
+    role: Optional[str]  # ✅ NEW
     socials: Optional[Dict]
 
 
@@ -190,6 +188,7 @@ class UserOut(BaseModel):
     username: str
     bio: Optional[str]
     location: Optional[str]
+    role: Optional[str]  # ✅ NEW
     profilePhoto: Optional[str]
     coverPhoto: Optional[str]
     socials: Optional[Dict]
@@ -216,8 +215,8 @@ class CommentCreate(BaseModel):
 class MessageCreate(BaseModel):
     sender_id: int
     receiver_id: int
-    text: str
-    media: str = None
+    text: Optional[str] = None
+    media: Optional[str] = None
 
 # ------------------------------------------------------
 # FASTAPI INITIALIZATION
@@ -234,6 +233,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+
+os.makedirs(os.path.join(UPLOADS_DIR, "profile"), exist_ok=True)
+os.makedirs(os.path.join(UPLOADS_DIR, "chat"), exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 
 # ------------------------------------------------------
@@ -283,24 +291,14 @@ def send_reset_email(to_email: str, reset_link: str):
 # ------------------------------------------------------
 @app.post("/signup", response_model=UserOut)
 def signup(data: UserCreate, db: Session = Depends(get_db)):
-
-    # 🔍 Check email first
     email_exists = db.query(User).filter(User.email == data.email).first()
     if email_exists:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already taken"
-        )
+        raise HTTPException(status_code=400, detail="Email already taken")
 
-    # 🔍 Check username
     username_exists = db.query(User).filter(User.username == data.username).first()
     if username_exists:
-        raise HTTPException(
-            status_code=400,
-            detail="Username already taken"
-        )
+        raise HTTPException(status_code=400, detail="Username already taken")
 
-    # ✅ Create user
     user = User(
         email=data.email,
         fullName=data.fullName,
@@ -331,7 +329,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
 # ------------------------------------------------------
 # USE OF GOOGLE TO LOGIN & SIGN UP
 # ------------------------------------------------------
-GOOGLE_CLIENT_ID = "shere google client id which you get in when you create you poject in google cloud and get a api"
+GOOGLE_CLIENT_ID = "12399447113-6b9ejbmq2q42c9fn5cmkcu91hog0n5eo.apps.googleusercontent.com"
 
 @app.post("/auth/google")
 def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db)):
@@ -350,7 +348,6 @@ def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db
         user = db.query(User).filter(User.email == email).first()
 
         if not user:
-            # 🔹 CREATE NEW USER
             username = email.split("@")[0]
             i = 1
             base = username
@@ -363,7 +360,7 @@ def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db
                 fullName=full_name,
                 username=username,
                 hashed_password=hash_password(str(uuid.uuid4())),
-                profilePhoto=picture,  # ✅ use google photo ONLY first time
+                profilePhoto=picture,  
                 socials={
                     "google": True,
                     "google_id": google_id
@@ -375,14 +372,12 @@ def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db
             db.refresh(user)
 
         else:
-            # 🔹 EXISTING USER → LINK GOOGLE
             if not user.socials:
                 user.socials = {}
 
             user.socials["google"] = True
             user.socials["google_id"] = google_id
 
-            # ✅ ONLY set google photo if user NEVER uploaded photo
             if not user.profilePhoto:
                 user.profilePhoto = picture
 
@@ -402,8 +397,7 @@ def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db
 # PROFILE UPDATE
 # ------------------------------------------------------
 
-PROFILE_UPLOAD_DIR = "uploads/profile"
-os.makedirs(PROFILE_UPLOAD_DIR, exist_ok=True)
+PROFILE_UPLOAD_DIR = os.path.join(UPLOADS_DIR, "profile")
 
 @app.put("/update-profile")
 def update_profile(
@@ -412,6 +406,7 @@ def update_profile(
     username: str = Form(None),
     bio: str = Form(None),
     location: str = Form(None),
+    role: str = Form(None),  # ✅ NEW
     socials: str = Form(None),
     profilePhoto: UploadFile = File(None),
     coverPhoto: UploadFile = File(None),
@@ -423,27 +418,19 @@ def update_profile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # -------- VALIDATION & UPDATES --------
-
-    # 1. Validate & Update Full Name
     if fullName is not None:
         if len(fullName) > 50:
             raise HTTPException(status_code=400, detail="Name must be 50 characters or less")
-        # Regex: Alphabets and spaces only
         if not re.match(r"^[a-zA-Z\s]+$", fullName):
             raise HTTPException(status_code=400, detail="Name must contain only alphabets")
         user.fullName = fullName
 
-    # 2. Validate & Update Username
     if username is not None:
         if len(username) > 20:
             raise HTTPException(status_code=400, detail="Username must be 20 characters or less")
-        # Regex: Lowercase letters only
         if not re.match(r"^[a-z]+$", username):
             raise HTTPException(status_code=400, detail="Username must be lowercase letters only (no numbers/spaces)")
         
-        # CRITICAL: Check if new username is taken by SOMEONE ELSE
-        # We search for a user who has this username BUT has a different ID
         username_exists = db.query(User).filter(User.username == username, User.id != id).first()
         if username_exists:
             raise HTTPException(status_code=400, detail="Username already taken")
@@ -456,15 +443,18 @@ def update_profile(
     if location is not None:
         user.location = location
 
+    # ✅ Save Role
+    if role is not None:
+        user.role = role
+
     if socials:
         try:
             user.socials = json.loads(socials)
         except:
             pass 
 
-    # -------- PROFILE PHOTO --------
     if removeProfilePhoto == "true":
-        user.profilePhoto = None  # Remove from DB
+        user.profilePhoto = None  
     elif profilePhoto is not None:
         ext = profilePhoto.filename.split(".")[-1].lower()
         filename = f"profile_{uuid4().hex}.{ext}"
@@ -473,9 +463,8 @@ def update_profile(
             shutil.copyfileobj(profilePhoto.file, f)
         user.profilePhoto = f"/uploads/profile/{filename}"
 
-    # -------- COVER PHOTO --------
     if removeCoverPhoto == "true":
-        user.coverPhoto = None  # Remove from DB
+        user.coverPhoto = None  
     elif coverPhoto is not None:
         ext = coverPhoto.filename.split(".")[-1].lower()
         filename = f"cover_{uuid4().hex}.{ext}"
@@ -493,7 +482,6 @@ def update_profile(
     }
 
 
-
 @app.get("/users/{user_id}")
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
@@ -502,15 +490,15 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
     return {
         "id": user.id,
-        "fullName": user.fullName,     # ✅ FIXED
+        "fullName": user.fullName,     
         "username": user.username,
         "bio": user.bio,
         "location": user.location,
+        "role": user.role,  # ✅ NEW
         "profilePhoto": user.profilePhoto,
         "coverPhoto": user.coverPhoto,
         "socials": user.socials
     }
-
 
 
 # ------------------------------------------------------
@@ -530,7 +518,6 @@ def create_post(data: PostCreate, db: Session = Depends(get_db)):
     return {"message": "Post created", "post": post}
 
 
-
 @app.get("/feed/{user_id}")
 def feed(user_id: int, db: Session = Depends(get_db)):
     rows = (
@@ -548,12 +535,11 @@ def feed(user_id: int, db: Session = Depends(get_db)):
         "user_id": p.User.id,
         "username": p.User.username,
         "fullName": p.User.fullName,
+        "role": p.User.role, # ✅ NEW
         "profilePhoto": p.User.profilePhoto,
         "likes": db.query(Like).filter_by(post_id=p.Post.id).count(),
         "comments": db.query(Comment).filter_by(post_id=p.Post.id).count()
     } for p in rows]
-
-
 
 
 @app.get("/users/{user_id}/posts")
@@ -574,11 +560,11 @@ def user_posts(user_id: int, db: Session = Depends(get_db)):
         "user_id": p.User.id,
         "username": p.User.username,
         "fullName": p.User.fullName,
+        "role": p.User.role, # ✅ NEW
         "profilePhoto": p.User.profilePhoto,
         "likes": db.query(Like).filter_by(post_id=p.Post.id).count(),
         "comments": db.query(Comment).filter_by(post_id=p.Post.id).count()
     } for p in rows]
-
 
 
 @app.get("/posts/{post_id}")
@@ -587,10 +573,6 @@ def get_post(post_id: int, viewer_id: int | None = None, db: Session = Depends(g
     if not post:
         raise HTTPException(404)
 
-    # ✅ Count view only if:
-    # - viewer exists
-    # - viewer is NOT owner
-    # - viewer has NOT viewed before
     if viewer_id and viewer_id != post.user_id:
         already_viewed = db.query(PostView).filter_by(
             post_id=post_id,
@@ -612,10 +594,10 @@ def get_post(post_id: int, viewer_id: int | None = None, db: Session = Depends(g
         "user_id": user.id,
         "username": user.username,
         "fullName": user.fullName, 
+        "role": user.role, # ✅ NEW
         "profilePhoto": user.profilePhoto,
         "likes": db.query(Like).filter_by(post_id=post.id).count()
     }
-
 
 
 @app.post("/posts/{post_id}/comment")
@@ -647,7 +629,7 @@ def add_comment(post_id: int, data: CommentCreate, db: Session = Depends(get_db)
 def get_comments(post_id: int, db: Session = Depends(get_db)):
     rows = (
         db.query(Comment, User)
-        .join(User, Comment.user_id == User.id)  # ✅ EXPLICIT JOIN
+        .join(User, Comment.user_id == User.id)  
         .filter(Comment.post_id == post_id)
         .order_by(Comment.created_at.asc())
         .all()
@@ -679,7 +661,6 @@ def delete_comment(comment_id: int, user_id: int, db: Session = Depends(get_db))
     return {"ok": True}
 
 
-
 @app.get("/posts/{post_id}/is-liked/{user_id}")
 def is_liked(post_id: int, user_id: int, db: Session = Depends(get_db)):
     liked = db.query(Like).filter_by(post_id=post_id, user_id=user_id).first()
@@ -698,7 +679,6 @@ def like_post(post_id: int, user_id: int, db: Session = Depends(get_db)):
     db.add(Like(post_id=post_id, user_id=user_id))
     db.commit()
 
-    # notification
     if post.user_id != user_id:
         db.add(Notification(
             receiver_id=post.user_id,
@@ -764,7 +744,6 @@ def follow_user(data: dict, db: Session = Depends(get_db)):
     ))
     db.commit()
 
-    # 🔔 create notification
     db.add(Notification(
         receiver_id=following_id,
         sender_id=follower_id,
@@ -773,7 +752,6 @@ def follow_user(data: dict, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Followed successfully"}
-
 
 
 @app.delete("/unfollow")
@@ -792,9 +770,6 @@ def unfollow_user(data: dict, db: Session = Depends(get_db)):
     return {"message": "Unfollowed successfully"}
 
 
-# ------------------------------------------------------
-# UPDATED: GET FOLLOWERS
-# ------------------------------------------------------
 @app.get("/followers/{user_id}")
 def get_followers(user_id: int, viewer_id: int, db: Session = Depends(get_db)):
     followers = (
@@ -804,7 +779,6 @@ def get_followers(user_id: int, viewer_id: int, db: Session = Depends(get_db)):
         .all()
     )
     
-    # Get a set of IDs the viewer is currently following
     viewer_following = {
         f.following_id for f in db.query(Follow).filter(Follow.follower_id == viewer_id)
     }
@@ -818,9 +792,6 @@ def get_followers(user_id: int, viewer_id: int, db: Session = Depends(get_db)):
     } for u in followers]
 
 
-# ------------------------------------------------------
-# NEW: GET FOLLOWING
-# ------------------------------------------------------
 @app.get("/following/{user_id}")
 def get_following(user_id: int, viewer_id: int, db: Session = Depends(get_db)):
     following = (
@@ -830,7 +801,6 @@ def get_following(user_id: int, viewer_id: int, db: Session = Depends(get_db)):
         .all()
     )
     
-    # Get a set of IDs the viewer is currently following
     viewer_following = {
         f.following_id for f in db.query(Follow).filter(Follow.follower_id == viewer_id)
     }
@@ -842,7 +812,6 @@ def get_following(user_id: int, viewer_id: int, db: Session = Depends(get_db)):
         "profilePhoto": u.profilePhoto,
         "isFollowing": u.id in viewer_following
     } for u in following]
-
 
 
 @app.get("/follow-stats/{user_id}")
@@ -909,7 +878,7 @@ def mark_notification_read(notif_id: int, db: Session = Depends(get_db)):
 
 
 # ------------------------------------------------------
-# Serach
+# Search
 # ------------------------------------------------------
 @app.get("/search/users")
 def search_users(q: str, db: Session = Depends(get_db)):
@@ -932,6 +901,7 @@ def search_users(q: str, db: Session = Depends(get_db)):
         }
         for u in users
     ]
+
 
 # ------------------------------------------------------
 # Massages
@@ -956,7 +926,6 @@ def send_message(data: MessageCreate, db: Session = Depends(get_db)):
         "created_at": msg.created_at
     }
 
-#Get users I follow
 @app.get("/messages/search")
 def search_users(q: str, viewer_id: int, db: Session = Depends(get_db)):
     users = (
@@ -984,6 +953,7 @@ def search_users(q: str, viewer_id: int, db: Session = Depends(get_db)):
         "isFollowing": u.id in following_ids
     } for u in users]
 
+
 @app.get("/messages/requests/{user_id}")
 def message_requests(user_id: int, db: Session = Depends(get_db)):
     sub = db.query(Follow.following_id).filter(
@@ -1008,18 +978,25 @@ def message_requests(user_id: int, db: Session = Depends(get_db)):
         "profilePhoto": u.profilePhoto
     } for u in rows]
 
-# ------------------------------------------------------
-# ✅ UPDATED: GET CONVERSATIONS (Detailed Previews)
-# ------------------------------------------------------
+@app.get("/messages/unread-count/{user_id}")
+def get_unread_count(user_id: int, db: Session = Depends(get_db)):
+    count = db.query(Message).filter(
+        Message.receiver_id == user_id,
+        or_(
+            Message.read == False,  
+            Message.read == None    
+        )
+    ).count()
+    
+    return {"count": count}
+
 @app.get("/messages/conversations/{user_id}")
 def get_conversations(user_id: int, db: Session = Depends(get_db)):
-    # Helper for partner ID
     other_id = case(
         (Message.sender_id == user_id, Message.receiver_id),
         else_=Message.sender_id
     ).label("other_id")
 
-    # ✅ FIXED: Use func.row_number() instead of row_number()
     latest_subq = (
         db.query(
             other_id,
@@ -1031,7 +1008,6 @@ def get_conversations(user_id: int, db: Session = Depends(get_db)):
         .subquery()
     )
 
-    # Subquery: Get unread counts for messages sent *to* me *by* them
     unread_subq = (
         db.query(Message.sender_id, func.count().label("unread_count"))
         .filter(Message.receiver_id == user_id, Message.read == False)
@@ -1039,13 +1015,12 @@ def get_conversations(user_id: int, db: Session = Depends(get_db)):
         .subquery()
     )
 
-    # Main query: Join everything together and get User details
     response_data = (
         db.query(User, latest_subq.c.created_at, latest_subq.c.text, unread_subq.c.unread_count)
         .join(latest_subq, User.id == latest_subq.c.other_id)
         .outerjoin(unread_subq, User.id == unread_subq.c.sender_id)
-        .filter(latest_subq.c.rn == 1) # Filter to rn=1 for the latest message
-        .order_by(latest_subq.c.created_at.desc()) # Sort by newest message
+        .filter(latest_subq.c.rn == 1) 
+        .order_by(latest_subq.c.created_at.desc()) 
         .all()
     )
     
@@ -1063,10 +1038,8 @@ def get_conversations(user_id: int, db: Session = Depends(get_db)):
     
     return final_previews
 
-# ✅ Marking Messages as Read when Chat is Opened
 @app.get("/messages/{me}/{other}")
 def get_messages(me: int, other: int, db: Session = Depends(get_db)):
-    # 1. MARK AS READ: When I open the chat, mark messages sent BY 'other' TO 'me' as read
     db.query(Message).filter(
         Message.sender_id == other,
         Message.receiver_id == me,
@@ -1074,7 +1047,6 @@ def get_messages(me: int, other: int, db: Session = Depends(get_db)):
     ).update({"read": True})
     db.commit()
 
-    # 2. Fetch Messages
     rows = (
         db.query(Message, User)
         .join(User, User.id == Message.sender_id)
@@ -1095,30 +1067,13 @@ def get_messages(me: int, other: int, db: Session = Depends(get_db)):
             "media": m.media,
             "sender": "me" if m.sender_id == me else "other",
             "senderPhoto": u.profilePhoto,   
-            "created_at": m.created_at
+            "created_at": m.created_at 
         }
         for m, u in rows
     ]
 
-# ------------------------------------------------------
-# NEW: GET TOTAL UNREAD COUNT (For Home Page)
-# ------------------------------------------------------
-@app.get("/messages/unread-count/{user_id}")
-def get_unread_count(user_id: int, db: Session = Depends(get_db)):
-    # ✅ Count messages where read is False OR Null (for old messages)
-    count = db.query(Message).filter(
-        Message.receiver_id == user_id,
-        or_(
-            Message.read == False,  # Is 0
-            Message.read == None    # Is NULL (Old messages)
-        )
-    ).count()
-    
-    return {"count": count}
 
-#Upload file in massage chat
-UPLOAD_DIR = "uploads/chat"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+UPLOAD_DIR_CHAT = os.path.join(UPLOADS_DIR, "chat")
 
 @app.post("/messages/upload")
 def upload_message(
@@ -1128,7 +1083,7 @@ def upload_message(
     db: Session = Depends(get_db)
 ):
     filename = f"{uuid4().hex}_{file.filename}"
-    save_path = os.path.join(UPLOAD_DIR, filename)
+    save_path = os.path.join(UPLOAD_DIR_CHAT, filename)
 
     with open(save_path, "wb") as f:
         f.write(file.file.read())
@@ -1150,25 +1105,20 @@ def upload_message(
         "sender": "me"
     }
 
-#Make uploads accessible
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ------------------------------------------------------
 # FORGOT PASSWORD
 # ------------------------------------------------------
 @app.post("/forgot-password")
 def forgot_password(
-    data: ForgotPasswordRequest,  # ✅ Use the Pydantic model
+    data: ForgotPasswordRequest,
     db: Session = Depends(get_db)
 ):
-    # Access email via data.email
     user = db.query(User).filter(User.email == data.email).first()
 
-    # Always return same message (security)
     if not user:
         return {"message": "If account exists, reset link sent"}
 
-    # ... Rest of your existing logic ...
     token = uuid4().hex
     expires = datetime.utcnow() + timedelta(minutes=10)
 
@@ -1189,6 +1139,7 @@ def forgot_password(
     send_reset_email(user.email, reset_link)
 
     return {"message": "If account exists, reset link sent"}
+
 # ------------------------------------------------------
 # RESET PASSWORD
 # ------------------------------------------------------
@@ -1198,17 +1149,14 @@ def reset_password(
     data: ResetPasswordRequest, 
     db: Session = Depends(get_db)
 ):
-    # 1. Validate Password Rules
     pwd = data.new_password
     
     if len(pwd) < 8 or len(pwd) > 20:
         raise HTTPException(400, "Password must be between 8 and 20 characters")
     
-    # Regex: 1 Lower, 1 Upper, 1 Number or Special
     if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d\W]).+$", pwd):
         raise HTTPException(400, "Password must have 1 Uppercase, 1 Lowercase, and 1 Number/Special char")
 
-    # 2. Check Token
     reset = db.query(PasswordReset).filter(
         PasswordReset.token == token
     ).first()
@@ -1216,11 +1164,9 @@ def reset_password(
     if not reset or reset.expires_at < datetime.utcnow():
         raise HTTPException(400, "Invalid or expired token")
 
-    # 3. Update User Password
     user = db.query(User).filter(User.id == reset.user_id).first()
     user.hashed_password = hash_password(pwd)
 
-    # 4. Cleanup
     db.delete(reset)
     db.commit()
 
