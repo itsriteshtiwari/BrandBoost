@@ -14,7 +14,6 @@ import {
 } from "../components/Icons";
 import ContentCard from "../components/ContentCard";
 
-// Simple Close Icon for Modal
 const CloseIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -29,8 +28,7 @@ function AdminProfilePage() {
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0 });
 
-  // ✅ MODAL STATES
-  const [modalType, setModalType] = useState(null); // "Followers" or "Following"
+  const [modalType, setModalType] = useState(null); 
   const [modalUsers, setModalUsers] = useState([]);
   const [modalSearch, setModalSearch] = useState("");
   const [isModalLoading, setIsModalLoading] = useState(false);
@@ -46,14 +44,12 @@ function AdminProfilePage() {
     return `http://localhost:8000${path}`;
   };
 
-  /* ================= PROTECT ROUTE ================= */
   useEffect(() => {
     if (!current) {
       navigate("/");
       return;
     }
 
-    // Fetch User Info
     fetch(`http://localhost:8000/users/${current.id}`)
       .then(res => res.json())
       .then(data => {
@@ -61,7 +57,6 @@ function AdminProfilePage() {
         localStorage.setItem("user", JSON.stringify({ ...current, ...data }));
       });
 
-    // Fetch Posts
     fetch(`http://localhost:8000/users/${current.id}/posts`)
       .then(res => res.json())
       .then(data => {
@@ -69,14 +64,12 @@ function AdminProfilePage() {
         setStats(s => ({ ...s, posts: data.length }));
       });
 
-    // Fetch Follow Stats
     fetch(`http://localhost:8000/follow-stats/${current.id}`)
       .then(res => res.json())
       .then(data => setStats(s => ({ ...s, ...data })));
 
   }, []);
 
-  /* ================= MODAL LOGIC ================= */
   const openModal = async (type) => {
     setModalType(type);
     setModalSearch("");
@@ -102,7 +95,6 @@ function AdminProfilePage() {
     setModalUsers([]);
   };
 
-  // Toggle Follow from inside the Modal
   const toggleFollow = async (user) => {
     const isCurrentlyFollowing = user.isFollowing;
     const url = isCurrentlyFollowing ? "http://localhost:8000/unfollow" : "http://localhost:8000/follow";
@@ -116,12 +108,10 @@ function AdminProfilePage() {
       });
 
       if (res.ok) {
-        // 1. Update Modal User UI (swap button)
         setModalUsers(prev => prev.map(u => 
           u.id === user.id ? { ...u, isFollowing: !isCurrentlyFollowing } : u
         ));
 
-        // 2. Update Main Profile Following Count
         setStats(prev => ({
           ...prev,
           following: prev.following + (isCurrentlyFollowing ? -1 : 1)
@@ -132,7 +122,6 @@ function AdminProfilePage() {
     }
   };
 
-  // Filter users based on search box in modal
   const filteredModalUsers = modalUsers.filter(u => 
     u.username.toLowerCase().includes(modalSearch.toLowerCase()) || 
     (u.fullName && u.fullName.toLowerCase().includes(modalSearch.toLowerCase()))
@@ -144,7 +133,6 @@ function AdminProfilePage() {
     <main className="profile-main relative">
       <div className="container">
 
-        {/* ================= HEADER ================= */}
         <div className="profile-card">
           <div className="cover-container">
             {userData.coverPhoto ? (
@@ -162,13 +150,29 @@ function AdminProfilePage() {
                 )}
               </div>
             </div>
+
+            <div className="cover-socials">
+              {userData.socials?.facebook && <a href={userData.socials.facebook} target="_blank" rel="noreferrer"><FacebookIcon /></a>}
+              {userData.socials?.instagram && <a href={userData.socials.instagram} target="_blank" rel="noreferrer"><InstagramIcon /></a>}
+              {userData.socials?.twitter && <a href={userData.socials.twitter} target="_blank" rel="noreferrer"><TwitterIcon /></a>}
+              {userData.socials?.youtube && <a href={userData.socials.youtube} target="_blank" rel="noreferrer"><YoutubeIcon /></a>}
+              {userData.socials?.mail && <a href={`mailto:${userData.socials.mail}`}><MailIcon /></a>}
+            </div>
           </div>
 
           <div className="profile-info">
             <h1 className="fullname">{userData.fullName}</h1>
             <p className="username">@{userData.username}</p>
+            
+            {/* ✅ NEW: Role display */}
+            <div style={{textAlign: "center", marginBottom: "1rem"}}>
+              {userData.role && (
+                <span style={{ background: "transprant", color: "gray", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "bold" }}>
+                  {userData.role}
+                </span>
+              )}
+            </div>
 
-            {/* ================= STATS (Clickable) ================= */}
             <div className="stats-box">
               <div className="stat-item">
                 <GridIcon />
@@ -176,14 +180,12 @@ function AdminProfilePage() {
                 <span className="stat-label">Posts</span>
               </div>
 
-              {/* ✅ CLICKABLE FOLLOWERS */}
               <div className="stat-item" style={{cursor: 'pointer'}} onClick={() => openModal("Followers")}>
                 <UsersIcon />
                 <span className="stat-number">{stats.followers}</span>
                 <span className="stat-label hover:underline">Followers</span>
               </div>
 
-              {/* ✅ CLICKABLE FOLLOWING */}
               <div className="stat-item" style={{cursor: 'pointer'}} onClick={() => openModal("Following")}>
                 <UsersIcon />
                 <span className="stat-number">{stats.following}</span>
@@ -197,14 +199,6 @@ function AdminProfilePage() {
               </button>
             </div>
 
-            <div className="social-links">
-              {userData.socials?.facebook && <a href={userData.socials.facebook}><FacebookIcon /></a>}
-              {userData.socials?.instagram && <a href={userData.socials.instagram}><InstagramIcon /></a>}
-              {userData.socials?.twitter && <a href={userData.socials.twitter}><TwitterIcon /></a>}
-              {userData.socials?.youtube && <a href={userData.socials.youtube}><YoutubeIcon /></a>}
-              {userData.socials?.mail && <a href={`mailto:${userData.socials.mail}`}><MailIcon /></a>}
-            </div>
-
             <p className="bio">{userData.bio}</p>
 
             {userData.location && (
@@ -215,7 +209,6 @@ function AdminProfilePage() {
           </div>
         </div>
 
-        {/* ================= POSTS GRID ================= */}
         <div className="posts-grid">
           {posts.map(post => (
             <ContentCard key={post.id} post={post} onDelete={handleDeletePost} />
@@ -223,21 +216,17 @@ function AdminProfilePage() {
         </div>
       </div>
 
-      {/* ================= INSTAGRAM-STYLE MODAL ================= */}
       {modalType && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            
-            {/* Modal Header */}
             <div className="modal-header">
-              <div style={{width: '24px'}}></div> {/* Spacer for centering text */}
+              <div style={{width: '24px'}}></div> 
               <h2>{modalType}</h2>
               <button className="close-modal-btn" onClick={closeModal}>
                 <CloseIcon />
               </button>
             </div>
 
-            {/* Modal Search */}
             <div className="modal-search-box">
               <input 
                 type="text" 
@@ -247,7 +236,6 @@ function AdminProfilePage() {
               />
             </div>
 
-            {/* User List */}
             <div className="modal-user-list">
               {isModalLoading ? (
                 <div className="loading-text">Loading...</div>
@@ -270,7 +258,6 @@ function AdminProfilePage() {
                       </div>
                     </div>
 
-                    {/* ✅ Follow/Following Button */}
                     <button 
                       className={`modal-follow-btn ${user.isFollowing ? 'following' : 'follow'}`}
                       onClick={() => toggleFollow(user)}
