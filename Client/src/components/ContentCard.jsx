@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { HeartIcon, MessageIcon, EyeIcon, ThreeDotsIcon } from "./Icons"; // Ensure these exist
+import { HeartIcon, MessageIcon, EyeIcon, ThreeDotsIcon } from "./Icons"; 
 import { useNavigate } from "react-router-dom";
 
 
@@ -43,7 +43,6 @@ function ContentCard({ post, onDelete }) {
     }
   };
 
-  // ✅ DELETE FUNCTION
   const handleDelete = async (e) => {
     e.stopPropagation();
     if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -54,8 +53,8 @@ function ContentCard({ post, onDelete }) {
       });
 
       if (res.ok) {
-        if (onDelete) onDelete(post.id); // Notify parent to remove from list
-        else window.location.reload();   // Fallback reload
+        if (onDelete) onDelete(post.id); 
+        else window.location.reload();   
       } else {
         alert("Failed to delete post");
       }
@@ -118,7 +117,12 @@ function ContentCard({ post, onDelete }) {
               <span>{(post.fullName || post.username || "?")[0].toUpperCase()}</span>
             )}
           </div>
-          <span className="text-sm font-medium text-gray-800">@{post.username}</span>
+          
+          {/* ✅ NEW: Displays username and role */}
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-800 leading-tight">@{post.username}</span>
+            {post.role && <span className="text-[10px] text-gray-500 uppercase tracking-wide font-bold">{post.role}</span>}
+          </div>
         </div>
 
         {/* Actions */}
