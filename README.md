@@ -69,7 +69,7 @@ BrandBoost/
      - The application type should be **Web application.**
      - Add `<your server>/callback` as an **Authorized redirect URI.** For example, `https://localhost:5000/callback`
 </br>
-Return to the Credentials page once both have been created, then:
+Return to the Credentials page once both have been created, then:</br>
 Copy your API Key and assign it to the environment variable GOOGLE_API_KEY:
 
 ```
