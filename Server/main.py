@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 # ------------------------------------------------------
 # DATABASE SETUP
 # ------------------------------------------------------
-DATABASE_URL = "mysql+pymysql://root:password@localhost/brandboost"
+DATABASE_URL = "mysql+pymysql://root:Anchal%4059x@localhost/brandboost"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -329,7 +329,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
 # ------------------------------------------------------
 # USE OF GOOGLE TO LOGIN & SIGN UP
 # ------------------------------------------------------
-GOOGLE_CLIENT_ID = "give you google auth client id wich you get when you create API"
+GOOGLE_CLIENT_ID = "12399447113-6b9ejbmq2q42c9fn5cmkcu91hog0n5eo.apps.googleusercontent.com"
 
 @app.post("/auth/google")
 def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db)):
@@ -1071,6 +1071,35 @@ def get_messages(me: int, other: int, db: Session = Depends(get_db)):
         }
         for m, u in rows
     ]
+
+# ------------------------------------------------------
+# ✅ NEW: GET POST VIEWERS (Detailed List)
+# ------------------------------------------------------
+@app.get("/posts/{post_id}/viewers")
+def get_post_viewers(post_id: int, db: Session = Depends(get_db)):
+    # Check if post exists
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    # Fetch distinct viewers (users) for this post
+    # Assuming unique user views are tracked in the PostView table
+    viewers = (
+        db.query(User)
+        .join(PostView, PostView.user_id == User.id)
+        .filter(PostView.post_id == post_id)
+        .distinct() # ensure unique users in the list
+        .all()
+    )
+
+    # Simplified response, potentially restricted via authentication later
+    return [{
+        "id": u.id,
+        "username": u.username,
+        "fullName": u.fullName,
+        "role": u.role, # Brand, Agency, or Seeker
+        "profilePhoto": u.profilePhoto
+    } for u in viewers]
 
 
 UPLOAD_DIR_CHAT = os.path.join(UPLOADS_DIR, "chat")
