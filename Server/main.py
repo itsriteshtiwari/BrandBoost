@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 # ------------------------------------------------------
 # DATABASE SETUP
 # ------------------------------------------------------
-DATABASE_URL = "mysql+pymysql://root:Anchal%4059x@localhost/brandboost"
+DATABASE_URL = "mysql+pymysql://root:password@localhost/brandboost"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -329,7 +329,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
 # ------------------------------------------------------
 # USE OF GOOGLE TO LOGIN & SIGN UP
 # ------------------------------------------------------
-GOOGLE_CLIENT_ID = "12399447113-6b9ejbmq2q42c9fn5cmkcu91hog0n5eo.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "GOOGLE_API_KEY"
 
 @app.post("/auth/google")
 def google_auth(token: str = Body(..., embed=True), db: Session = Depends(get_db)):
