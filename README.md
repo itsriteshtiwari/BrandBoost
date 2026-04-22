@@ -65,7 +65,7 @@ BrandBoost/
 
 2. Visit your project's Credentials page. Create two credentials in the project:
 
--An API Key. You can leave it as Unrestricted for the purposes of these examples.
+- An API Key. You can leave it as Unrestricted for the purposes of these examples.
 An OAuth client ID.
 The application type should be Web application.
 Add <your server>/callback as an Authorized redirect URI. For example, https://localhost:5000/callback
