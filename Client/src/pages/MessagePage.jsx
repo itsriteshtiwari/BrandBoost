@@ -1,8 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom"; // ✅ ADDED THIS
 import { PaperclipIcon, SendIcon } from "../components/Icons";
 
 function MessagePage() {
   const current = JSON.parse(localStorage.getItem("user") || "null");
+  
+  const location = useLocation(); // ✅ ADDED THIS
+  const navigate = useNavigate(); // ✅ ADDED THIS
 
   const [conversations, setConversations] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -14,6 +18,16 @@ function MessagePage() {
 
   const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
+
+  // ✅ ADDED THIS: Listens for incoming chatUser data and selects them automatically
+  useEffect(() => {
+    if (location.state && location.state.chatUser) {
+      setActiveUser(location.state.chatUser);
+      
+      // Safely clear the state without breaking React Router history
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const getImageUrl = (path) => {
     if (!path) return null;
@@ -63,7 +77,7 @@ function MessagePage() {
       .then(res => res.json())
       .then(setMessages);
       
-    // ✅ Refresh the local list of chats after opening one,
+    // Refresh the local list of chats after opening one,
     // to clear the unread count dot.
     loadConversations(); 
   }, [activeUser]);
@@ -102,7 +116,7 @@ function MessagePage() {
       setMessages(prev => [...prev, newMsg]);
       setText("");
       
-      // ✅ Update the current conversations list locally so the list
+      // Update the current conversations list locally so the list
       // re-sorts and puts this person on top without full reload.
       setConversations(prev => {
          const filtered = prev.filter(c => c.partnerId !== activeUser.id);
@@ -138,7 +152,7 @@ function MessagePage() {
     if (res.ok) {
       const msg = await res.json();
       setMessages(prev => [...prev, msg]);
-      loadConversations(); // ✅ Refresh conversations to sort list
+      loadConversations(); // Refresh conversations to sort list
     }
   };
 
@@ -189,13 +203,13 @@ function MessagePage() {
                  username: conv.username,
                  profilePhoto: conv.profilePhoto
               })}
-              // ✅ Apply background color to active chat
+              // Apply background color to active chat
               className={`p-3 cursor-pointer flex gap-3 items-center ${activeUser?.id === conv.partnerId ? 'bg-white/10' : 'hover:bg-white/5'}`}
             >
-              {/* ✅ Avatar wrapper for absolute positioning of unread dot */}
+              {/* Avatar wrapper for absolute positioning of unread dot */}
               <div className="relative">
                  <Avatar user={{ name: conv.name, profilePhoto: conv.profilePhoto }} />
-                 {/* ✅ GREEN DOT INDICATOR (UNREAD MESSAGES) */}
+                 {/* GREEN DOT INDICATOR (UNREAD MESSAGES) */}
                  {conv.unreadCount > 0 && (
                     <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-[#0d0b2b] flex items-center justify-center text-[10px] font-bold text-white">
                        {conv.unreadCount}
@@ -206,10 +220,10 @@ function MessagePage() {
               <div className="flex-1">
                  <div className="flex items-center justify-between">
                     <p className="font-medium text-sm">{conv.name}</p>
-                    {/* ✅ Last message time display */}
+                    {/* Last message time display */}
                     <p className="text-xs text-gray-500">{formatMessageTime(conv.lastMessageTime)}</p>
                  </div>
-                 {/* ✅ Last message preview */}
+                 {/* Last message preview */}
                  <p className={`text-xs text-gray-400 max-w-xs line-clamp-1 break-all ${conv.unreadCount > 0 ? 'font-semibold text-white' : ''}`}>
                     {conv.lastMessageText || 'No message text'}
                  </p>
